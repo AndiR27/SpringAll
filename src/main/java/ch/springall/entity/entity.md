@@ -255,3 +255,5 @@ les relations peuvent être unidirectionnelles ou bidirectionnelles.
 - Ne pas mélanger JPA et R2DBC dans la même logique métier.
 
 ---
+
+
