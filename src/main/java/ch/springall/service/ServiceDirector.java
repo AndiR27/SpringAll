@@ -5,6 +5,7 @@ import ch.springall.dtos.DirectorRecord;
 import ch.springall.entity.Director;
 import ch.springall.mapper.MapperDirector;
 import ch.springall.repository.jpa.RepositoryDirector;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -55,10 +56,16 @@ public class ServiceDirector {
         return repositoryDirector.findByFirstNameAndLastName(firstName, lastName);
     }
 
+    //Lorsque l'on ajoute ou modifie des données dans une méthode de service, on peut utiliser @Transactional
+    // pour gérer les transactions automatiquement et éviter les problèmes de cohérence des données :
+    // @Transactional : démarre une transaction au début de la méthode et la commit à la fin si tout s'est bien passé
+    // De plus, si une exception est levée, la transaction est rollbackée automatiquement
+
 
     //V2 : utilisation des DTOs : on n'expose pas l'entité à la couche supérieure (REST), car
     // cela peut poser des problèmes de sécurité et de maintenance -> on crée une classe DirectorDTO
     // et on mappe les données entre l'entité et le DTO dans le service
+    @Transactional
     public DirectorDTO addDirectorDTO(DirectorDTO directorDTO){
         // On mappe le DTO vers l'entité
         Director d = mapperDirector.fromDtoToEntity(directorDTO);
@@ -73,6 +80,7 @@ public class ServiceDirector {
     //V3 : utilisation des Records (Java 16+) : même principe que les DTOs, mais avec une syntaxe plus concise
     // On crée une classe DirectorRecord et on mappe les données entre l'entité et le Record dans le service
     // Les Records sont immuables et plus légers que les DTOs classiques
+    @Transactional
     public DirectorRecord addDirectorRecord(DirectorRecord directorRecord){
         // On mappe le Record vers l'entité
         Director d = mapperDirector.fromRecordToEntity(directorRecord);
@@ -88,6 +96,7 @@ public class ServiceDirector {
     // Optional est une classe conteneur qui peut contenir une valeur ou être vide et qui existe depuis Java 8
     // Cela permet d'éviter les NullPointerException et de forcer le développeur à gérer le cas où la valeur est absente
     // avec des Exceptions/Try-Catch ou des méthodes comme orElse, orElseThrow, ifPresent, etc.
+
     public Optional<DirectorRecord> findDirectorByIdOptional(Long id){
         // On utilise map() pour transformer l'Optional<Director> en Optional<DirectorRecord>
         Director d = repositoryDirector.findById(id).orElse(null);
