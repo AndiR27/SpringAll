@@ -8,7 +8,6 @@ import java.time.LocalDate;
 // Les entités qui héritent de cette classe hériteront de ses mappings
 // et de ses propriétés
 @MappedSuperclass
-@Table(name = "person")
 public abstract class Person {
 
     // Clé primaire de l'entité : pour une superclasse, on peut laisser

@@ -1,4 +1,4 @@
-package ch.springall.repository;
+package ch.springall.repository.jpa;
 
 import ch.springall.entity.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,5 +40,5 @@ public interface RepositoryMovie extends JpaRepository<Movie, Long> {
     // et on utilise @Autowired pour injecter le RepositoryMovie dans cette classe
     // On va plutôt utiliser cette méthode pour des requêtes complexes et jamais implémenter un JPARepository en entier
     // car on perd tous les avantages de Spring Data JPA et il y a trop de méthodes à implémenter
-    Movie findByTitleCustom(String title);
+    //Movie findByTitleCustom(String title);
 }

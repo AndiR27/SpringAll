@@ -129,5 +129,9 @@ public class Movie {
         return director;
     }
 
+    public void setDirector(Director director) {
+        this.director = director;
+    }
+
 
 }

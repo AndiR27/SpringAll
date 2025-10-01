@@ -1,4 +1,4 @@
-package ch.springall.repository;
+package ch.springall.repository.r2dbc;
 
 import ch.springall.entity.Continent;
 import ch.springall.entity.CountryR2DBC;
@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 
 // Interface pour le repository des pays utilisant R2DBC (Reactive Relational Database Connectivity)
 // Equivalent à JPA, mais on va étendre ReactiveCrudRepository
-@Repository
 public interface RepositoryCountryR2dbc extends ReactiveCrudRepository<CountryR2DBC, Long> {
     // ReactiveCrudRepository fournit des méthodes CRUD réactives pour l'entité CountryR2dbc
 

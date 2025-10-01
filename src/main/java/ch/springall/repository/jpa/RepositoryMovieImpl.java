@@ -1,4 +1,4 @@
-package ch.springall.repository;
+package ch.springall.repository.jpa;
 
 public class RepositoryMovieImpl {
 }
