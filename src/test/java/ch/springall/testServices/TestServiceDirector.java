@@ -20,9 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,5 +73,29 @@ public class TestServiceDirector {
         verify(repositoryDirector).save(any(Director.class));
 
     }
+
+    //Test pour vérifier si une personne existe après avoir été rajouté
+    @Test
+    public void testFindDirector(){
+        DirectorRecord d = new DirectorRecord(null, "Quentin", "Tarantino",
+                LocalDate.of(1963, 3, 27), 2, null);
+        Director dEntity = mapperDirector.fromRecordToEntity(d);
+        dEntity.setId(1L);
+        when(repositoryDirector.save(any(Director.class))).thenReturn(dEntity);
+        when(repositoryDirector.findById(1L)).thenReturn(Optional.of(dEntity));
+
+        // save et find
+        serviceDirector.addDirectorRecord(d);
+        Optional<DirectorRecord> result = serviceDirector.findDirectorByIdOptional(1L);
+
+        //tests
+        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertEquals(1L, result.get().id());
+        verify(repositoryDirector).save(any(Director.class));
+        verify(repositoryDirector).findById(1L);
+    }
+
+    //test pour un Update
 
 }

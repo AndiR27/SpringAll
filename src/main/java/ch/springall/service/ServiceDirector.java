@@ -2,18 +2,24 @@ package ch.springall.service;
 
 import ch.springall.dtos.DirectorDTO;
 import ch.springall.dtos.DirectorRecord;
+import ch.springall.dtos.MovieRecord;
 import ch.springall.entity.Director;
+import ch.springall.entity.Movie;
 import ch.springall.mapper.MapperDirector;
 import ch.springall.repository.jpa.RepositoryDirector;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 // Classe de service pour la gestion des directeurs : On ajoute ici les méthodes métiers (CRUD et autres)
 // L'annotation @Service indique que cette classe est un service Spring et sera gérée par le conteneur Spring
 @Service
+@Slf4j
 public class ServiceDirector {
 
     // Pour accéder aux données, on injecte le repository correspondant (RepositoryDirector)
@@ -32,10 +38,20 @@ public class ServiceDirector {
     //Mappers (si on utilise des DTOs)
     private final MapperDirector mapperDirector;
 
-    public ServiceDirector(@Qualifier("jpaDirector") RepositoryDirector repositoryDirector, MapperDirector mapperDirector) {
+    //Autres services
+    private final ServiceMovie serviceMovie;
+
+    public ServiceDirector(@Qualifier("jpaDirector") RepositoryDirector repositoryDirector, MapperDirector mapperDirector, ServiceMovie serviceMovie) {
         this.repositoryDirector = repositoryDirector;
         this.mapperDirector = mapperDirector;
+        this.serviceMovie = serviceMovie;
     }
+
+    //Logging : dans Spring Boot, on utilise généralement SLF4J avec Logback (inclus par défaut)
+    // On peut utiliser l'annotation @Slf4j de Lombok pour générer automatiquement un logger
+    // ou créer un logger manuellement avec LoggerFactory
+    // private static final Logger logger = LoggerFactory.getLogger(ServiceDirector.class);
+
 
     // Méthodes pour ajouter et récupérer un/des directeurs
 
@@ -87,7 +103,7 @@ public class ServiceDirector {
 
         // On sauvegarde l'entité
         Director savedDirector = repositoryDirector.save(d);
-
+        //log.info("director saved with id : {}", savedDirector.getId());
         // On mappe l'entité sauvegardée vers le Record et on le retourne
         return mapperDirector.toRecord(savedDirector);
     }
@@ -96,12 +112,62 @@ public class ServiceDirector {
     // Optional est une classe conteneur qui peut contenir une valeur ou être vide et qui existe depuis Java 8
     // Cela permet d'éviter les NullPointerException et de forcer le développeur à gérer le cas où la valeur est absente
     // avec des Exceptions/Try-Catch ou des méthodes comme orElse, orElseThrow, ifPresent, etc.
-
+    // L'Optional est logique dans une recherche, car il peut échouer !!
     public Optional<DirectorRecord> findDirectorByIdOptional(Long id){
         // On utilise map() pour transformer l'Optional<Director> en Optional<DirectorRecord>
         Director d = repositoryDirector.findById(id).orElse(null);
         // On utilise ofNullable() pour gérer le cas où d est null
         return Optional.ofNullable(mapperDirector.toRecord(d));
+    }
+
+    //Autres méthodes (update, delete, findAll, etc.) à ajouter selon les besoins
+    //update : pour une mise à jour, il suffit de appeler save() avec un objet ayant un id existant
+    // mais on peut aussi vérifier si l'objet existe avant de le mettre à jour
+    @Transactional
+    public Optional<DirectorRecord> updateDirector(DirectorRecord directorRecord){
+        Optional<DirectorRecord> existingDirectorOpt = findDirectorByIdOptional(directorRecord.id());
+        if(existingDirectorOpt.isPresent()){
+            Director d = mapperDirector.fromRecordToEntity(directorRecord);
+            Director updatedDirector = repositoryDirector.save(d);
+            return Optional.of(mapperDirector.toRecord(updatedDirector));
+        }
+        return Optional.empty();
+    }
+
+    //delete : on peut utiliser deleteById() du repository, mais on peut aussi vérifier si l'objet existe avant de le supprimer
+    // La méthode retourne true si la suppression a réussi, false sinon
+    @Transactional
+    public boolean deleteDirectorById(Long id){
+        Optional<DirectorRecord> existingDirectorOpt = findDirectorByIdOptional(id);
+        if(existingDirectorOpt.isPresent()){
+            repositoryDirector.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    //findAll : retourne une liste de tous les directeurs sous forme de Records par exemple
+    public List<DirectorRecord> findAllDirectors(){
+        List<DirectorRecord> directorRecords = new ArrayList<>();
+        List<Director> directors = repositoryDirector.findAll();
+        directors.forEach(director -> directorRecords.add(mapperDirector.toRecord(director)));
+        return directorRecords;
+    }
+
+    //Methode liée aux relations : par exemple rajouter un film à un directeur
+    @Transactional
+    public DirectorRecord addFilmToDirector(Long directorId, Long movieId) throws Exception {
+        Optional<DirectorRecord> d = this.findDirectorByIdOptional(directorId);
+        if(d.isPresent()){
+            //à tester : bidrectionnalité...
+            Optional<MovieRecord> m = this.serviceMovie.findMovie(movieId);
+            d.get().moviesRecord().add(m.get());
+            this.repositoryDirector.save(this.mapperDirector.fromRecordToEntity(d.get()));
+            return d.get();
+        }
+        else{
+            throw new Exception();
+        }
     }
 
 
