@@ -1,5 +1,5 @@
 package ch.springall.entity;
 
 public enum Genre {
-    ROMANCE, THRILLER, COMEDY, HORROR, SCI_FI, DOCUMENTARY
+    ROMANCE, THRILLER, COMEDY, HORROR, SCI_FI, DOCUMENTARY, ACTION
 }

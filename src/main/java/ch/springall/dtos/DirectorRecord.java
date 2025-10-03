@@ -29,4 +29,7 @@ public record DirectorRecord(
 
 
 ) {
+    public void updateFrom(DirectorRecord directorRecord) {
+
+    }
 }

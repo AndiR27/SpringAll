@@ -1,0 +1,16 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Format minimal : heure, niveau coloré, tag [SERVICE], logger, message -->
+            <pattern>%d{HH:mm:ss} %highlight(%-5level) [SERVICE] %cyan(%logger{20}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Désactive tous les logs globaux (Spring, Hibernate, etc.) -->
+    <root level="OFF"/>
+
+    <!-- Active uniquement ton code -->
+    <logger name="ch.springall" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+</configuration>

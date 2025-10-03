@@ -5,7 +5,10 @@ package ch.springall.testServices;
 // Le but est de tester les méthodes du service DirectorService
 
 import ch.springall.dtos.DirectorRecord;
+import ch.springall.dtos.MovieRecord;
 import ch.springall.entity.Director;
+import ch.springall.entity.Genre;
+import ch.springall.entity.Movie;
 import ch.springall.mapper.MapperDirector;
 import ch.springall.repository.jpa.RepositoryDirector;
 import ch.springall.service.ServiceDirector;
@@ -20,6 +23,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,5 +103,86 @@ public class TestServiceDirector {
     }
 
     //test pour un Update
+    @Test
+    public void testUpdateDirector(){
+        //Arrange
+        DirectorRecord d = new DirectorRecord(null, "Quentin", "Tarantino",
+                LocalDate.of(1963, 3, 27), 2, null);
+        Director dEntity = mapperDirector.fromRecordToEntity(d);
+        dEntity.setId(1L);
+        when(repositoryDirector.save(any(Director.class))).thenReturn(dEntity);
+        when(repositoryDirector.findById(1L)).thenReturn(Optional.of(dEntity));
+
+        //Act : update
+        DirectorRecord dAdded = serviceDirector.addDirectorRecord(d);
+        DirectorRecord dUpdate = new DirectorRecord(dAdded.id(), "Quentin", "Tarantino",
+                LocalDate.of(1963, 3, 27), 3, null);
+
+        Optional<DirectorRecord> result = serviceDirector.updateDirector(dUpdate);
+
+        //Assert
+        assertNotNull(result);
+        assertTrue(result.isPresent());
+        assertEquals(1L, result.get().id());
+        assertEquals(3, result.get().oscarCount());
+        verify(repositoryDirector, Mockito.times(2)).save(any(Director.class));
+        //Le save est appelé 2 fois : une fois pour l'ajout, une fois pour la mise à jour
+        verify(repositoryDirector).findById(1L);
+    }
+
+    //test pour un delete
+    @Test
+    @DisplayName("Test suppression d'un directeur")
+    public void testDeleteDirector(){
+        //Arrange
+        DirectorRecord d = new DirectorRecord(null, "Quentin", "Tarantino",
+                LocalDate.of(1963, 3, 27), 2, null);
+        Director dEntity = mapperDirector.fromRecordToEntity(d);
+        dEntity.setId(1L);
+        when(repositoryDirector.save(any(Director.class))).thenReturn(dEntity);
+        when(repositoryDirector.findById(1L)).thenReturn(Optional.of(dEntity));
+        Mockito.doNothing().when(repositoryDirector).deleteById(1L);
+
+        //Act : save then delete
+        DirectorRecord dAdded = serviceDirector.addDirectorRecord(d);
+        boolean deleteResult = serviceDirector.deleteDirectorById(dAdded.id());
+        when(repositoryDirector.findById(1L)).thenReturn(Optional.of(dEntity));
+        //vérification que le directeur n'existe plus
+        Optional<DirectorRecord> findResult = serviceDirector.findDirectorByIdOptional(1L);
+
+        //Assert
+        assertTrue(deleteResult);
+        assertNotNull(findResult);
+        assertFalse(findResult.isEmpty());
+        verify(repositoryDirector).save(any(Director.class));
+        verify(repositoryDirector).deleteById(1L);
+
+    }
+
+    //test des relations et propagation des opérations (cascade)
+    @Test
+    public void testAddDirectorWithMovies() throws Exception {
+        //Arrange
+        MovieRecord m1 = new MovieRecord(null, "Pulp Fiction", LocalDateTime.of(1998, Month.APRIL, 15, 12, 12), Genre.THRILLER, 9.5, null);
+        //Movie m2 = new Movie("Kill Bill", LocalDateTime.of(10, Month.APRIL, 2003, 12, 12), Genre.ACTION, 8.5, null);
+        DirectorRecord dRecordNew = new DirectorRecord(null, "Quentin", "Tarantino",
+                LocalDate.of(1963, 3, 27), 2, new ArrayList<>());
+        Director d = mapperDirector.fromRecordToEntity(dRecordNew);
+        d.setId(1L);
+        when(repositoryDirector.save(any(Director.class))).thenReturn(d);
+        when(repositoryDirector.findById(any(Long.class))).thenReturn(Optional.of(d));
+
+        //Act
+        DirectorRecord dRecord = serviceDirector.addDirectorRecord(mapperDirector.toRecord(d));
+        MovieRecord movieAddedRecord = serviceDirector.addFilmToDirector(dRecord.id(), m1);
+
+        //Assert
+        assertNotNull(dRecord);
+        assertNotNull(movieAddedRecord);
+        assertEquals("Pulp Fiction", movieAddedRecord.title());
+        assertEquals(d.getId(), movieAddedRecord.directorId());
+        verify(repositoryDirector, Mockito.times(2)).save(any(Director.class));
+        verify(repositoryDirector).findById(any(Long.class));
+    }
 
 }

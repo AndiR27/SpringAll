@@ -6,9 +6,12 @@ import ch.springall.dtos.MovieRecord;
 import ch.springall.entity.Director;
 import ch.springall.entity.Movie;
 import ch.springall.mapper.MapperDirector;
+import ch.springall.mapper.MapperMovie;
 import ch.springall.repository.jpa.RepositoryDirector;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +22,6 @@ import java.util.Optional;
 // Classe de service pour la gestion des directeurs : On ajoute ici les méthodes métiers (CRUD et autres)
 // L'annotation @Service indique que cette classe est un service Spring et sera gérée par le conteneur Spring
 @Service
-@Slf4j
 public class ServiceDirector {
 
     // Pour accéder aux données, on injecte le repository correspondant (RepositoryDirector)
@@ -38,19 +40,21 @@ public class ServiceDirector {
     //Mappers (si on utilise des DTOs)
     private final MapperDirector mapperDirector;
 
-    //Autres services
+    //Autres services/mappers si besoin (pour gérer les relations par exemple)
     private final ServiceMovie serviceMovie;
+    private final MapperMovie mapperMovie;
 
-    public ServiceDirector(@Qualifier("jpaDirector") RepositoryDirector repositoryDirector, MapperDirector mapperDirector, ServiceMovie serviceMovie) {
+    public ServiceDirector(@Qualifier("jpaDirector") RepositoryDirector repositoryDirector, MapperDirector mapperDirector, ServiceMovie serviceMovie, MapperMovie mapperMovie) {
         this.repositoryDirector = repositoryDirector;
         this.mapperDirector = mapperDirector;
         this.serviceMovie = serviceMovie;
+        this.mapperMovie = mapperMovie;
     }
 
     //Logging : dans Spring Boot, on utilise généralement SLF4J avec Logback (inclus par défaut)
     // On peut utiliser l'annotation @Slf4j de Lombok pour générer automatiquement un logger
     // ou créer un logger manuellement avec LoggerFactory
-    // private static final Logger logger = LoggerFactory.getLogger(ServiceDirector.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServiceDirector.class);
 
 
     // Méthodes pour ajouter et récupérer un/des directeurs
@@ -125,11 +129,12 @@ public class ServiceDirector {
     // mais on peut aussi vérifier si l'objet existe avant de le mettre à jour
     @Transactional
     public Optional<DirectorRecord> updateDirector(DirectorRecord directorRecord){
-        Optional<DirectorRecord> existingDirectorOpt = findDirectorByIdOptional(directorRecord.id());
+        Optional<Director> existingDirectorOpt = repositoryDirector.findById(directorRecord.id());
         if(existingDirectorOpt.isPresent()){
-            Director d = mapperDirector.fromRecordToEntity(directorRecord);
-            Director updatedDirector = repositoryDirector.save(d);
-            return Optional.of(mapperDirector.toRecord(updatedDirector));
+            // update les champs de l'objet existant avec les valeurs du nouvel objet
+            mapperDirector.updateEntityFromRecord(directorRecord, existingDirectorOpt.get());
+            Director dEntity = repositoryDirector.save(existingDirectorOpt.get());
+            return Optional.of(mapperDirector.toRecord(dEntity));
         }
         return Optional.empty();
     }
@@ -140,6 +145,7 @@ public class ServiceDirector {
     public boolean deleteDirectorById(Long id){
         Optional<DirectorRecord> existingDirectorOpt = findDirectorByIdOptional(id);
         if(existingDirectorOpt.isPresent()){
+            logger.info("Deleting director with id : {}", id);
             repositoryDirector.deleteById(id);
             return true;
         }
@@ -156,14 +162,16 @@ public class ServiceDirector {
 
     //Methode liée aux relations : par exemple rajouter un film à un directeur
     @Transactional
-    public DirectorRecord addFilmToDirector(Long directorId, Long movieId) throws Exception {
-        Optional<DirectorRecord> d = this.findDirectorByIdOptional(directorId);
+    public MovieRecord addFilmToDirector(Long directorId, MovieRecord movieRecord) throws Exception {
+        Optional<Director> d = repositoryDirector.findById(directorId);
         if(d.isPresent()){
             //à tester : bidrectionnalité...
-            Optional<MovieRecord> m = this.serviceMovie.findMovie(movieId);
-            d.get().moviesRecord().add(m.get());
-            this.repositoryDirector.save(this.mapperDirector.fromRecordToEntity(d.get()));
-            return d.get();
+            MovieRecord mRecord = this.serviceMovie.addMovie(movieRecord);
+            Movie m = this.mapperMovie.fromRecordToEntity(mRecord);
+            d.get().getMoviesDirected().add(m);
+            m.setDirector(d.get());
+            this.repositoryDirector.save(d.get());
+            return mapperMovie.toRecord(m);
         }
         else{
             throw new Exception();

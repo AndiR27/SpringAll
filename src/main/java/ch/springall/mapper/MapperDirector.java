@@ -36,5 +36,8 @@ public interface MapperDirector {
         }
     }
 
+    //On peut aussi définir un mapping pour une mise à jour partielle d'une entité existante avec @MappingTarget
+    void updateEntityFromRecord(DirectorRecord dRecord, @MappingTarget Director entity);
+
 
 }
