@@ -22,7 +22,6 @@ public record DirectorRecord(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
         LocalDate birthDate,
         int oscarCount,
-
         // Pour une relation one-to-many, on peut inclure une liste d'autres records pour
         // faire le mapping des entités associées
         List<MovieRecord> moviesRecord

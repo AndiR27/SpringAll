@@ -37,6 +37,13 @@
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- Web (REST) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+
         <!-- JPA (JDBC/Hikari) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
