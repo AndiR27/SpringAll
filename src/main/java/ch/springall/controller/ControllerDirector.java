@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 //L'annotation @RestController indique que cette classe est un controller REST
 //Elle combine @Controller et @ResponseBody, ce qui signifie que les méthodes de cette classe
 //retournent directement des objets qui seront convertis en JSON (ou XML) et envoyés dans la réponse HTTP
@@ -73,5 +74,27 @@ public class ControllerDirector {
     public ResponseEntity<DirectorRecord> addDirector(@Valid @RequestBody DirectorRecord dRecord){
         DirectorRecord dAdded = serviceDirector.addDirectorRecord(dRecord);
         return ResponseEntity.status(201).body(dAdded);
+    }
+
+    //----------------------
+    // 4: Mettre à jour un directeur existant (PUT /directors/{id})
+    // Pour une mise à jour, on utilise PUT et on envoie l'objet complet (remplacement)
+    //----------------------
+    @PutMapping(path = "/update", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<DirectorRecord> updateDirector(@Valid @RequestBody DirectorRecord dRecord){
+        Optional<DirectorRecord> updatedDirector = serviceDirector.updateDirector(dRecord);
+        return updatedDirector.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    //------------------------------------
+    // 5: Supprimer un directeur existant (DEL /{id})
+    // On retourne aucun contenu dans le cas d'un delete, mais on peut lancer
+    // une erreur si l'id n'existe pas
+    @DeleteMapping(path ="/{id}")
+    public ResponseEntity<Boolean> deleteDirector(@PathVariable Long id){
+        if(this.serviceDirector.deleteDirectorById(id)){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
