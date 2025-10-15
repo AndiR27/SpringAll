@@ -5,6 +5,7 @@ import ch.springall.dtos.DirectorRecord;
 import ch.springall.dtos.MovieRecord;
 import ch.springall.entity.Director;
 import ch.springall.entity.Movie;
+import ch.springall.exceptions.ResourceNotFoundException;
 import ch.springall.mapper.MapperDirector;
 import ch.springall.mapper.MapperMovie;
 import ch.springall.repository.jpa.RepositoryDirector;
@@ -174,7 +175,7 @@ public class ServiceDirector {
             return mapperMovie.toRecord(m);
         }
         else{
-            throw new Exception();
+            throw new ResourceNotFoundException("Director with id " + directorId + " not found");
         }
     }
 

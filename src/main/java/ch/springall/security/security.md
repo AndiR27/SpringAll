@@ -101,6 +101,22 @@ Spring Security fournit une gestion fine et flexible des routes HTTP :
 
 Chaque requête est filtrée selon une **chaîne de filtres déclarée explicitement** (`SecurityFilterChain`), où l’ordre détermine la priorité d’exécution.
 
+### 🔐 Méthodes essentielles de `HttpSecurity`
+
+- **authorizeHttpRequests()** — définit les règles d’accès aux différentes routes (public, restreint, rôle spécifique).
+- **csrf()** — active ou désactive la protection contre les attaques CSRF.
+- **formLogin()** — configure l’authentification par formulaire HTML (page de login, redirection après succès).
+- **httpBasic()** — active l’authentification HTTP Basic (utile pour tests ou APIs simples).
+- **logout()** — gère la déconnexion, l’invalidation de session et la redirection après logout.
+- **sessionManagement()** — contrôle la politique de gestion des sessions (stateful ou stateless).
+- **exceptionHandling()** — personnalise la gestion des erreurs d’accès ou d’authentification.
+- **oauth2Login()** — active la connexion via un fournisseur OAuth2 (Google, GitHub, etc.).
+- **oauth2ResourceServer()** — protège les APIs avec des tokens JWT ou Bearer.
+- **addFilterBefore() / addFilterAfter()** — insère des filtres personnalisés dans la chaîne de sécurité.
+- **securityMatcher()** — applique la configuration de sécurité à des routes spécifiques seulement.
+
+
+Définir
 ### Recommandations REST
 - Utiliser exclusivement **HTTPS** (TLS obligatoire en production).
 - Refuser toute requête sans en-tête `Authorization`.
