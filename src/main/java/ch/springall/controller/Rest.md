@@ -67,7 +67,7 @@ En Spring Boot, un controller est une classe annotée :
     - `@DeleteMapping` pour la suppression.
 
 Chaque paramètre de requête doit être extrait clairement :
-- `@PathVariable Long id` pour récupérer un identifiant dans l’URL (`/directors/{id}`),
+- `@PathVariable("id") Long id` pour récupérer un identifiant dans l’URL (`/directors/{id}`),
 - `@RequestParam String name` pour un paramètre simple (`?name=...`),
 - `@RequestBody` pour recevoir un objet JSON complet (souvent un DTO),
 - `@RequestHeader` pour lire un header HTTP (par ex. un token d’authentification).
