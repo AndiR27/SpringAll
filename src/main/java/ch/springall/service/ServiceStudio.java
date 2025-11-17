@@ -9,6 +9,7 @@ import ch.springall.mapper.MapperStudio;
 import ch.springall.repository.jpa.RepositoryDirector;
 import ch.springall.repository.jpa.RepositoryStudio;
 import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.NativeWebRequest;
 
@@ -30,9 +31,10 @@ public class ServiceStudio {
 
 
     //add a studio
+    @Transactional
     public StudioRecord addStudio(StudioRecord studioRecord){
-        if(repositoryStudio.findByStudioName(studioRecord.name()) != null){
-            throw new EntityExistsException("Studio with name " + studioRecord.name() + " already exists");
+        if(repositoryStudio.findByStudioName(studioRecord.studioName()) != null){
+            throw new EntityExistsException("Studio with name " + studioRecord.studioName() + " already exists");
         }
         Studio s = repositoryStudio.save(mapperStudio.fromRecordToEntity(studioRecord));
 
@@ -40,6 +42,7 @@ public class ServiceStudio {
     }
 
     //Find a studio
+    @Transactional
     public StudioRecord findStudio(Long studioId){
         Optional<Studio> studio = repositoryStudio.findById(studioId);
         if(studio.isEmpty()){

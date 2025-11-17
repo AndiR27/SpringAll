@@ -10,8 +10,8 @@ import java.util.List;
 public record StudioRecord(
         Long id,
         @NotBlank
-        String name,
-        int foundedYear,
+        String studioName,
+        int studioFoundedYear,
         List<DirectorRecord> directorList
 ) {
 }

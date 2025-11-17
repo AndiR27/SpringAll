@@ -76,6 +76,8 @@ Ils assurent que :
 - `@Test` : test JUnit standard.
 - `@BeforeEach`, `@AfterEach` : initialisation/cleanup par test.
 - `@SpringBootTest` : démarre le contexte Spring complet.
+   - `@Autowired` : Avec le contexte spring en test, on n'instancie pas la classe (pas un bean Spring), il n'y
+a pas de constructeur donc l'injection doit être faite via l'annotation
 - `@WebMvcTest(Controller.class)` : charge uniquement la couche web (controller + MVC infra).
 - `@DataJpaTest` : tests repository avec DB embarquée.
 - `@MockBean` : injection de dépendance mockée dans le contexte Spring.
